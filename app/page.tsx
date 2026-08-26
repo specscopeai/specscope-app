@@ -1,7 +1,23 @@
+'use client';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowRight, CheckCircle2, ShieldCheck, Zap, FileSpreadsheet, Clock } from 'lucide-react';
+import AuthModal from '@/components/AuthModal';
+import { supabase } from '@/lib/supabase';
 
 export default function LandingPage() {
+  const [showAuth, setShowAuth] = useState(false);
+  const [authTab, setAuthTab] = useState<'signin' | 'signup'>('signin');
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setCurrentUser(session.user);
+      }
+    });
+  }, []);
+
   return (
     <main className="flex flex-col items-center">
       {/* Navigation */}
@@ -11,7 +27,16 @@ export default function LandingPage() {
           <span className="font-bold text-xl tracking-tight">SpecScope<span className="text-blue-500">.AI</span></span>
         </div>
         <div className="flex items-center space-x-4">
-          <Link href="/dashboard" className="text-sm font-medium text-slate-300 hover:text-white transition">Sign In</Link>
+          {currentUser ? (
+            <Link href="/dashboard" className="text-sm font-medium text-slate-300 hover:text-white transition">Dashboard ({currentUser.email.split('@')[0]})</Link>
+          ) : (
+            <button 
+              onClick={() => { setAuthTab('signin'); setShowAuth(true); }}
+              className="text-sm font-medium text-slate-300 hover:text-white transition"
+            >
+              Sign In
+            </button>
+          )}
           <Link href="/dashboard" className="px-4 py-2 text-sm font-medium bg-blue-600 hover:bg-blue-500 rounded-lg transition shadow-lg shadow-blue-500/20">Launch Estimator</Link>
         </div>
       </nav>
@@ -30,7 +55,7 @@ export default function LandingPage() {
         </p>
         <div className="mt-8 flex flex-col sm:flex-row gap-4">
           <Link href="/dashboard" className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition flex items-center justify-center space-x-2 shadow-xl shadow-blue-600/25">
-            <span>Try SpecScope Free (3 Scans Included)</span>
+            <span>Try SpecScope Free (Interactive Demo Included)</span>
             <ArrowRight className="h-5 w-5" />
           </Link>
         </div>
@@ -66,12 +91,12 @@ export default function LandingPage() {
               <div className="mt-4 text-4xl font-extrabold text-white">$0</div>
               <p className="text-xs text-slate-500 mt-1">No credit card required</p>
               <ul className="mt-6 space-y-3 text-sm text-slate-400">
-                <li className="flex items-center"><CheckCircle2 className="h-4 w-4 text-blue-500 mr-2" /> 3 Full Spec Book Scans</li>
+                <li className="flex items-center"><CheckCircle2 className="h-4 w-4 text-blue-500 mr-2" /> Unlimited Sample Demos</li>
+                <li className="flex items-center"><CheckCircle2 className="h-4 w-4 text-blue-500 mr-2" /> 1 Full Project Spec Scan</li>
                 <li className="flex items-center"><CheckCircle2 className="h-4 w-4 text-blue-500 mr-2" /> Scope & Exclusion Tables</li>
-                <li className="flex items-center"><CheckCircle2 className="h-4 w-4 text-blue-500 mr-2" /> CSV Data Export</li>
               </ul>
             </div>
-            <Link href="/dashboard" className="mt-8 block text-center py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-sm font-medium transition">Get Started</Link>
+            <Link href="/dashboard" className="mt-8 block text-center py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-sm font-medium transition">Get Started Free</Link>
           </div>
 
           {/* Solo Estimator */}
@@ -82,10 +107,10 @@ export default function LandingPage() {
               <div className="mt-4 text-4xl font-extrabold text-white">$69<span className="text-base font-normal text-slate-400">/mo</span></div>
               <p className="text-xs text-slate-500 mt-1">Billed monthly (cancel anytime)</p>
               <ul className="mt-6 space-y-3 text-sm text-slate-300">
-                <li className="flex items-center"><CheckCircle2 className="h-4 w-4 text-blue-400 mr-2" /> Unlimited Spec Book Scans</li>
+                <li className="flex items-center"><CheckCircle2 className="h-4 w-4 text-blue-400 mr-2" /> Unlimited Project Spec Scans</li>
                 <li className="flex items-center"><CheckCircle2 className="h-4 w-4 text-blue-400 mr-2" /> All CSI MasterFormat Divisions</li>
                 <li className="flex items-center"><CheckCircle2 className="h-4 w-4 text-blue-400 mr-2" /> Liquidated Damages Radar</li>
-                <li className="flex items-center"><CheckCircle2 className="h-4 w-4 text-blue-400 mr-2" /> Priority Extraction Speed</li>
+                <li className="flex items-center"><CheckCircle2 className="h-4 w-4 text-blue-400 mr-2" /> Uncapped Excel / CSV Exports</li>
               </ul>
             </div>
             <a href="https://buy.stripe.com/14AaEW6dXbEff2H87K28800" className="mt-8 block text-center py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition shadow-lg shadow-blue-600/30">Start Solo Plan</a>
@@ -107,6 +132,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Auth Modal */}
+      <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} defaultTab={authTab} />
     </main>
   );
 }

@@ -1,18 +1,18 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Zap, Upload, FileText, Download, CheckCircle, AlertTriangle, Sparkles, X, Lock, ArrowRight, User, Mail, ShieldCheck } from 'lucide-react';
+import { Zap, Upload, FileText, Download, CheckCircle, AlertTriangle, Sparkles, Lock, ArrowRight, LogOut } from 'lucide-react';
+import AuthModal from '@/components/AuthModal';
 import { supabase } from '@/lib/supabase';
 
 export default function Dashboard() {
   const [trade, setTrade] = useState('Division 23 - HVAC');
   const [isProcessing, setIsProcessing] = useState(false);
   const [extractedData, setExtractedData] = useState<any>(null);
-  const [scansRemaining, setScansRemaining] = useState(3);
+  const [scansRemaining, setScansRemaining] = useState(1);
   const [showPaywall, setShowPaywall] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authEmail, setAuthEmail] = useState('');
-  const [authSubmitted, setAuthSubmitted] = useState(false);
+  const [authTab, setAuthTab] = useState<'signin' | 'signup'>('signin');
   const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
@@ -22,6 +22,17 @@ export default function Dashboard() {
         fetchProfile(session.user.id);
       }
     });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setCurrentUser(session.user);
+        fetchProfile(session.user.id);
+      } else {
+        setCurrentUser(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const fetchProfile = async (userId: string) => {
@@ -68,19 +79,18 @@ export default function Dashboard() {
     }
   };
 
-  // 1. FREE Sample Spec Loader (NEVER decrements counter)
   const handleLoadFreeSample = () => {
     setIsProcessing(true);
     setTimeout(() => {
       const data = sampleProjects[trade] || sampleProjects['Division 23 - HVAC'];
       setExtractedData(data);
       setIsProcessing(false);
-    }, 800);
+    }, 600);
   };
 
-  // 2. Real PDF Extraction (Requires Account & Decrements DB Counter)
   const handleExtractCustomPDF = () => {
     if (!currentUser) {
+      setAuthTab('signup');
       setShowAuthModal(true);
       return;
     }
@@ -103,13 +113,9 @@ export default function Dashboard() {
     }, 1200);
   };
 
-  const handleMagicLinkAuth = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!authEmail) return;
-    const { error } = await supabase.auth.signInWithOtp({ email: authEmail });
-    if (!error) {
-      setAuthSubmitted(true);
-    }
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setCurrentUser(null);
   };
 
   const handleExportCSV = () => {
@@ -135,15 +141,20 @@ export default function Dashboard() {
           <span className="font-bold text-lg">SpecScope<span className="text-blue-500">.AI</span></span>
         </Link>
         <div className="flex items-center space-x-4">
-          <div className="text-xs text-slate-300 bg-slate-800/90 border border-slate-700 px-3 py-1.5 rounded-full flex items-center space-x-2">
-            <span>Free Credits:</span>
-            <span className={`font-bold ${scansRemaining > 0 ? 'text-blue-400' : 'text-rose-400'}`}>{scansRemaining} / 3</span>
-          </div>
           {currentUser ? (
-            <span className="text-xs text-slate-400">{currentUser.email}</span>
+            <div className="flex items-center space-x-3">
+              <div className="text-xs text-slate-300 bg-slate-800/90 border border-slate-700 px-3 py-1.5 rounded-full flex items-center space-x-2">
+                <span>Free Scans:</span>
+                <span className={`font-bold ${scansRemaining > 0 ? 'text-blue-400' : 'text-rose-400'}`}>{scansRemaining}</span>
+              </div>
+              <span className="text-xs text-slate-400 font-medium">{currentUser.email}</span>
+              <button onClick={handleSignOut} title="Sign Out" className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition">
+                <LogOut className="h-4 w-4" />
+              </button>
+            </div>
           ) : (
             <button 
-              onClick={() => setShowAuthModal(true)}
+              onClick={() => { setAuthTab('signin'); setShowAuthModal(true); }}
               className="text-xs font-semibold text-slate-300 hover:text-white px-3 py-1.5 border border-slate-700 rounded-lg hover:bg-slate-800 transition"
             >
               Sign In
@@ -158,9 +169,8 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* Main Workspace */}
+      {/* Workspace */}
       <div className="flex-1 max-w-6xl w-full mx-auto p-6 grid lg:grid-cols-3 gap-8">
-        {/* Left Control Panel */}
         <div className="lg:col-span-1 space-y-6">
           <div className="p-6 bg-slate-900 border border-slate-800 rounded-2xl">
             <h2 className="text-lg font-bold text-white mb-4">Project Extraction</h2>
@@ -178,13 +188,11 @@ export default function Dashboard() {
               <option>Division 07 - Roofing & Waterproofing</option>
             </select>
 
-            {/* Upload Box */}
             <div className="border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-xl p-6 text-center transition bg-slate-950/40 space-y-3">
               <Upload className="h-7 w-7 text-slate-400 mx-auto" />
               <p className="text-sm font-medium text-slate-300">Drop Spec Book (PDF) here</p>
               <p className="text-xs text-slate-500">Up to 250 MB supported</p>
               
-              {/* Free Sample Button */}
               <div className="pt-2 border-t border-slate-800">
                 <button 
                   onClick={handleLoadFreeSample}
@@ -207,7 +215,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Right Results Panel */}
         <div className="lg:col-span-2 space-y-6">
           {extractedData ? (
             <div className="space-y-6">
@@ -225,7 +232,6 @@ export default function Dashboard() {
                 </button>
               </div>
 
-              {/* Scope Checklist */}
               <div className="p-6 bg-slate-900 border border-slate-800 rounded-2xl">
                 <h4 className="text-sm font-bold text-slate-300 uppercase tracking-wider mb-4 flex items-center">
                   <CheckCircle className="h-4 w-4 text-blue-400 mr-2" />
@@ -245,7 +251,6 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Risk & Exclusions */}
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="p-5 bg-slate-900 border border-slate-800 rounded-2xl">
                   <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider mb-3 flex items-center">
@@ -287,57 +292,9 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Email Auth Modal */}
-      {showAuthModal && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-8 relative shadow-2xl">
-            <button onClick={() => setShowAuthModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white">
-              <X className="h-5 w-5" />
-            </button>
-            <div className="w-12 h-12 bg-blue-950 border border-blue-800 rounded-xl flex items-center justify-center text-blue-400 mb-4">
-              <Mail className="h-6 w-6" />
-            </div>
-            <h3 className="text-xl font-bold text-white">Create Free Estimator Account</h3>
-            <p className="mt-1 text-xs text-slate-400">
-              Enter your work email to unlock 3 full project manual extractions and save your takeoff reports.
-            </p>
-            
-            {authSubmitted ? (
-              <div className="mt-6 p-4 bg-blue-950/50 border border-blue-800 rounded-xl text-center">
-                <CheckCircle className="h-6 w-6 text-blue-400 mx-auto mb-2" />
-                <p className="text-sm font-semibold text-white">Magic Login Link Sent!</p>
-                <p className="text-xs text-slate-400 mt-1">Check your inbox at <span className="text-blue-300">{authEmail}</span> to complete sign in.</p>
-              </div>
-            ) : (
-              <form onSubmit={handleMagicLinkAuth} className="mt-6 space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">Company / Work Email</label>
-                  <input 
-                    type="email" 
-                    required 
-                    placeholder="estimator@contracting.com"
-                    value={authEmail}
-                    onChange={(e) => setAuthEmail(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                  />
-                </div>
-                <button 
-                  type="submit"
-                  className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-sm transition shadow-lg shadow-blue-600/30"
-                >
-                  Send Free Login Link
-                </button>
-                <p className="text-xs text-center text-slate-500 flex items-center justify-center">
-                  <ShieldCheck className="h-3.5 w-3.5 mr-1 text-slate-400" />
-                  No credit card required. 3 Free Scans Included.
-                </p>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} defaultTab={authTab} />
 
-      {/* Paywall Upgrade Modal */}
+      {/* Paywall Modal */}
       {showPaywall && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-8 relative shadow-2xl">
@@ -349,7 +306,7 @@ export default function Dashboard() {
             </div>
             <h3 className="text-2xl font-bold text-white">Upgrade to Unlimited Extractions</h3>
             <p className="mt-2 text-sm text-slate-400">
-              You have used your 3 free trial scans. Upgrade to an active estimator plan to unlock unlimited project manual extractions and Excel exports.
+              You have completed your free project extraction. Upgrade to an active estimator plan to unlock unlimited project manual extractions and uncapped Excel takeoff exports.
             </p>
             <div className="mt-6 space-y-3">
               <a 
