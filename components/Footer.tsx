@@ -1,0 +1,80 @@
+'use client';
+import { useState } from 'react';
+import { ShieldCheck, Lock, FileText, X } from 'lucide-react';
+
+export default function Footer() {
+  const [showTerms, setShowTerms] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
+
+  return (
+    <footer className="w-full border-t border-slate-800 bg-slate-950 py-12 px-6 text-xs text-slate-400">
+      <div className="max-w-6xl mx-auto grid md:grid-cols-4 gap-8 mb-8">
+        <div className="space-y-3 md:col-span-2">
+          <span className="font-bold text-base text-white tracking-tight">SpecScope<span className="text-blue-500">.AI</span></span>
+          <p className="text-slate-400 max-w-md leading-relaxed">
+            Automated specification analysis and scope extraction software built for commercial trade subcontractors and estimating teams.
+          </p>
+          <p className="text-slate-500 text-[11px] leading-relaxed pt-2 border-t border-slate-900">
+            <strong>Estimating Disclaimer:</strong> SpecScope AI is an estimating productivity aid. It does not constitute architectural, engineering, or binding legal advice. Contractors are solely responsible for reviewing complete project manuals, verifying contract documents, confirming addenda, and submitting final bids.
+          </p>
+        </div>
+
+        <div>
+          <h4 className="font-semibold text-white mb-3">Legal & Compliance</h4>
+          <ul className="space-y-2">
+            <li><button onClick={() => setShowTerms(true)} className="hover:text-white transition">Terms of Service</button></li>
+            <li><button onClick={() => setShowPrivacy(true)} className="hover:text-white transition">Privacy & Data Security</button></li>
+            <li><span className="text-slate-500">Limitation of Liability</span></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 className="font-semibold text-white mb-3">Support & Inquiries</h4>
+          <ul className="space-y-2">
+            <li><a href="mailto:support@getspecscope.com" className="text-blue-400 hover:underline">support@getspecscope.com</a></li>
+            <li><span className="text-slate-400">Response time: &lt; 24 hours</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto pt-6 border-t border-slate-900 flex flex-col sm:flex-row justify-between items-center text-slate-500 text-[11px]">
+        <div>© 2026 SpecScope AI. All rights reserved.</div>
+        <div className="flex space-x-6 mt-2 sm:mt-0">
+          <span>Encrypted with TLS 1.3</span>
+          <span>Zero Public AI Model Training</span>
+        </div>
+      </div>
+
+      {/* Terms Modal */}
+      {showTerms && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-8 max-h-[80vh] overflow-y-auto relative shadow-2xl text-slate-300 space-y-4">
+            <button onClick={() => setShowTerms(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X className="h-5 w-5" /></button>
+            <h3 className="text-xl font-bold text-white">Terms of Service & Estimating Agreement</h3>
+            <p className="text-xs text-slate-400">Effective: August 2026</p>
+            <div className="space-y-3 text-xs leading-relaxed">
+              <p><strong>1. Scope of Service:</strong> SpecScope AI provides automated parsing of construction specification documents to assist contractors in preparing estimates. The software provides informational checklists and summary tables.</p>
+              <p><strong>2. Contractor Responsibility & Limitation of Liability:</strong> Under no circumstances shall SpecScope AI or its operators be liable for missed scope items, bidding errors, liquidated damages, lost profits, or contractual disputes resulting from reliance on the software. The contractor retains 100% legal responsibility for validating all architectural plans, specification manuals, addenda, and final bid submissions.</p>
+              <p><strong>3. Subscription & Cancellation:</strong> Subscriptions are billed monthly or annually and may be canceled at any time via the customer billing portal.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Privacy Modal */}
+      {showPrivacy && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-8 max-h-[80vh] overflow-y-auto relative shadow-2xl text-slate-300 space-y-4">
+            <button onClick={() => setShowPrivacy(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X className="h-5 w-5" /></button>
+            <h3 className="text-xl font-bold text-white">Privacy & Data Security Policy</h3>
+            <div className="space-y-3 text-xs leading-relaxed">
+              <p><strong>1. Zero AI Model Training:</strong> All specification documents processed through our enterprise API endpoints are strictly confidential and are <strong>never used to train public AI models</strong>, in compliance with standard Google Enterprise API service terms.</p>
+              <p><strong>2. Data Encryption:</strong> All data is encrypted in transit via TLS 1.3 and at rest with AES-256 encryption.</p>
+              <p><strong>3. Data Ownership:</strong> Contractors retain 100% ownership of all uploaded project manuals and extracted data. We do not sell or distribute contractor data to any third party.</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </footer>
+  );
+}

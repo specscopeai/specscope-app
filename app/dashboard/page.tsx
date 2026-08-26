@@ -1,8 +1,9 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Zap, Upload, FileText, Download, CheckCircle, AlertTriangle, Sparkles, Lock, ArrowRight, LogOut, X } from 'lucide-react';
+import { Zap, Upload, FileText, Download, CheckCircle, AlertTriangle, Sparkles, Lock, ArrowRight, LogOut, X, User } from 'lucide-react';
 import AuthModal from '@/components/AuthModal';
+import Footer from '@/components/Footer';
 import { supabase } from '@/lib/supabase';
 
 export default function Dashboard() {
@@ -14,6 +15,7 @@ export default function Dashboard() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authTab, setAuthTab] = useState<'signin' | 'signup'>('signin');
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [showSuccessBanner, setShowSuccessBanner] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -31,6 +33,14 @@ export default function Dashboard() {
         setCurrentUser(null);
       }
     });
+
+    // Check for post-checkout success redirect
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('session_id') || params.get('payment') === 'success') {
+        setShowSuccessBanner(true);
+      }
+    }
 
     return () => subscription.unsubscribe();
   }, []);
@@ -134,6 +144,14 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-950 text-slate-50">
+      {/* Success Banner */}
+      {showSuccessBanner && (
+        <div className="bg-blue-600 px-6 py-2.5 text-xs text-white flex justify-between items-center font-medium">
+          <span>🎉 Welcome to SpecScope Pro! Your subscription is active.</span>
+          <button onClick={() => setShowSuccessBanner(false)}><X className="h-4 w-4" /></button>
+        </div>
+      )}
+
       {/* Header */}
       <header className="border-b border-slate-800 bg-slate-900/50 py-4 px-6 flex justify-between items-center">
         <Link href="/" className="flex items-center space-x-2">
@@ -147,7 +165,10 @@ export default function Dashboard() {
                 <span>Free Scans:</span>
                 <span className={`font-bold ${scansRemaining > 0 ? 'text-blue-400' : 'text-rose-400'}`}>{scansRemaining}</span>
               </div>
-              <span className="text-xs text-slate-400 font-medium">{currentUser.email}</span>
+              <Link href="/account" className="flex items-center space-x-1.5 text-xs text-slate-300 hover:text-white px-2.5 py-1.5 rounded-lg hover:bg-slate-800 border border-slate-700 transition">
+                <User className="h-3.5 w-3.5 text-blue-400" />
+                <span>Account &amp; Seats</span>
+              </Link>
               <button onClick={handleSignOut} title="Sign Out" className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition">
                 <LogOut className="h-4 w-4" />
               </button>
@@ -185,7 +206,7 @@ export default function Dashboard() {
               <option>Division 26 - Electrical</option>
               <option>Division 22 - Plumbing</option>
               <option>Division 21 - Fire Suppression</option>
-              <option>Division 07 - Roofing & Waterproofing</option>
+              <option>Division 07 - Roofing &amp; Waterproofing</option>
             </select>
 
             <div className="border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-xl p-6 text-center transition bg-slate-950/40 space-y-3">
@@ -232,6 +253,7 @@ export default function Dashboard() {
                 </button>
               </div>
 
+              {/* Scope Checklist */}
               <div className="p-6 bg-slate-900 border border-slate-800 rounded-2xl">
                 <h4 className="text-sm font-bold text-slate-300 uppercase tracking-wider mb-4 flex items-center">
                   <CheckCircle className="h-4 w-4 text-blue-400 mr-2" />
@@ -251,11 +273,12 @@ export default function Dashboard() {
                 </div>
               </div>
 
+              {/* Risk & Exclusions */}
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="p-5 bg-slate-900 border border-slate-800 rounded-2xl">
                   <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider mb-3 flex items-center">
                     <AlertTriangle className="h-4 w-4 mr-2" />
-                    Penalties & Risk Clauses
+                    Penalties &amp; Risk Clauses
                   </h4>
                   <ul className="space-y-2 text-xs text-slate-300">
                     {extractedData.riskAlerts.map((r: any, idx: number) => (
@@ -281,6 +304,11 @@ export default function Dashboard() {
                   </ul>
                 </div>
               </div>
+
+              {/* Legal Disclaimer Box */}
+              <div className="p-4 bg-slate-900/40 border border-slate-800/60 rounded-xl text-[11px] text-slate-500 leading-relaxed">
+                <strong>Estimating Notice:</strong> SpecScope AI parses text patterns across specification sections to provide drafting checklists. Always review original architect-issued project manuals, contract specifications, and addenda before submitting formal bids.
+              </div>
             </div>
           ) : (
             <div className="h-96 border border-slate-800 rounded-2xl flex flex-col items-center justify-center text-center p-8 bg-slate-900/30">
@@ -292,9 +320,11 @@ export default function Dashboard() {
         </div>
       </div>
 
+      <Footer />
+
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} defaultTab={authTab} />
 
-      {/* Paywall Modal */}
+      {/* Paywall Modal with All Live Stripe Tiers */}
       {showPaywall && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-8 relative shadow-2xl">
@@ -310,17 +340,23 @@ export default function Dashboard() {
             </p>
             <div className="mt-6 space-y-3">
               <a 
-                href="https://buy.stripe.com/14AaEW6dXbEff2H87K28800"
+                href="https://buy.stripe.com/14A5kC6dX37Jf2H73G28802"
                 className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl flex items-center justify-center space-x-2 transition shadow-lg shadow-blue-600/30"
               >
-                <span>Solo Estimator — $69 / month</span>
+                <span>Solo Annual Pass (Save 40%) — $499 / year</span>
                 <ArrowRight className="h-4 w-4" />
               </a>
               <a 
-                href="https://buy.stripe.com/14A5kC6dX37Jf2H73G28802"
-                className="w-full py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-xl flex items-center justify-center space-x-2 transition border border-slate-700"
+                href="https://buy.stripe.com/14AaEW6dXbEff2H87K28800"
+                className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-xl flex items-center justify-center space-x-2 transition border border-slate-700 text-sm"
               >
-                <span>Annual Pass (Save 40%) — $499 / year</span>
+                <span>Solo Estimator — $69 / month</span>
+              </a>
+              <a 
+                href="https://buy.stripe.com/aFa7sK6dX6jV2fVgEg28801"
+                className="w-full py-3 bg-purple-950/40 hover:bg-purple-900/50 text-purple-300 font-semibold rounded-xl flex items-center justify-center space-x-2 transition border border-purple-800 text-sm"
+              >
+                <span>Team License (3 Seats) — $149 / month</span>
               </a>
             </div>
           </div>

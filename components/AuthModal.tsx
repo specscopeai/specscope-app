@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 export default function AuthModal({ isOpen, onClose, defaultTab = 'signin' }: { isOpen: boolean; onClose: () => void; defaultTab?: 'signin' | 'signup' }) {
   const [tab, setTab] = useState<'signin' | 'signup'>(defaultTab);
   const [email, setEmail] = useState('');
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -18,10 +19,15 @@ export default function AuthModal({ isOpen, onClose, defaultTab = 'signin' }: { 
     e.preventDefault();
     setErrorMsg('');
     
+    if (tab === 'signup' && !agreedToTerms) {
+      setErrorMsg('You must agree to the Terms of Service and Estimating Disclaimer.');
+      return;
+    }
+
     const atIndex = email.indexOf('@');
     const domain = atIndex > -1 ? email.slice(atIndex + 1).toLowerCase() : '';
     if (disposableDomains.includes(domain)) {
-      setErrorMsg('Please use a valid email address.');
+      setErrorMsg('Please use a valid company or personal email address.');
       return;
     }
 
@@ -103,6 +109,24 @@ export default function AuthModal({ isOpen, onClose, defaultTab = 'signin' }: { 
                 className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
+
+            {/* Clickwrap Agreement Checkbox */}
+            {tab === 'signup' && (
+              <div className="flex items-start space-x-2 pt-1">
+                <input 
+                  type="checkbox"
+                  id="terms"
+                  required
+                  checked={agreedToTerms}
+                  onChange={(e) => setAgreedToTerms(e.target.checked)}
+                  className="mt-0.5 rounded border-slate-700 bg-slate-800 text-blue-600 focus:ring-blue-500"
+                />
+                <label htmlFor="terms" className="text-[11px] text-slate-400 leading-tight">
+                  I agree to the <strong>Terms of Service</strong> and acknowledge that SpecScope AI is an estimating productivity aid subject to our <strong>Limitation of Liability Agreement</strong>.
+                </label>
+              </div>
+            )}
+
             {errorMsg && <p className="text-xs text-rose-400">{errorMsg}</p>}
             <button 
               type="submit"
