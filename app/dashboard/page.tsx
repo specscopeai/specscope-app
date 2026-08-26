@@ -1,35 +1,78 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Zap, Upload, FileText, Download, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Zap, Upload, FileText, Download, CheckCircle, AlertTriangle, Sparkles, X, Lock, ArrowRight, User } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 export default function Dashboard() {
   const [trade, setTrade] = useState('Division 23 - HVAC');
   const [isProcessing, setIsProcessing] = useState(false);
   const [extractedData, setExtractedData] = useState<any>(null);
+  const [scansRemaining, setScansRemaining] = useState(3);
+  const [showPaywall, setShowPaywall] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [email, setEmail] = useState('');
+  const [user, setUser] = useState<any>(null);
 
-  const handleSimulateExtraction = () => {
+  useEffect(() => {
+    const savedScans = localStorage.getItem('specscope_scans');
+    if (savedScans !== null) {
+      setScansRemaining(parseInt(savedScans, 10));
+    }
+  }, []);
+
+  const sampleProjects: Record<string, any> = {
+    'Division 23 - HVAC': {
+      projectName: "Mercer Medical Pavilion Phase II",
+      trade: "Division 23 - HVAC",
+      scopeItems: [
+        { id: "S-1", section: "23 05 93", title: "Testing, Adjusting, and Balancing (TAB)", detail: "Provide certified NEBB or AABC agency for all air and hydronic systems prior to substantial completion." },
+        { id: "S-2", section: "23 07 19", title: "HVAC Piping Insulation", detail: "Insulate all chilled water supply/return piping with 1.5-inch cellular glass insulation." },
+        { id: "S-3", section: "23 34 00", title: "Rooftop Air Handling Units", detail: "Furnish and install two 50-ton variable air volume RTUs with factory BACnet communication cards." },
+        { id: "S-4", section: "23 09 23", title: "Direct-Digital Control System for HVAC", detail: "Provide complete DDC temperature controls system integrated with hospital central BMS." }
+      ],
+      exclusions: [
+        { item: "High-Voltage Power Wiring & Breakers", assignedTo: "Division 26 - Electrical Contractor" },
+        { item: "Roof Penetration Flashing & Curbs", assignedTo: "Division 07 - Roofing Contractor / GC" }
+      ],
+      riskAlerts: [
+        { level: "HIGH", detail: "Liquidated damages of $2,500/day apply if final certified balancing report is delayed past Milestone 3." },
+        { level: "MED", detail: "2-year full parts and labor warranty required on all compressor components (standard is 1-year)." }
+      ]
+    },
+    'Division 26 - Electrical': {
+      projectName: "Oakridge Data Center Expansion",
+      trade: "Division 26 - Electrical",
+      scopeItems: [
+        { id: "E-1", section: "26 24 13", title: "Switchboards & Main Distribution", detail: "Furnish and install 4000A 480/277V service entrance switchboard with integrated transient voltage surge suppression." },
+        { id: "E-2", section: "26 32 13", title: "Diesel Emergency Engine Generators", detail: "Provide two 1500kW sound-attenuated standby diesel generators with automatic transfer switches (ATS)." }
+      ],
+      exclusions: [
+        { item: "Concrete Generator Pads", assignedTo: "Division 03 - Concrete Contractor" },
+        { item: "Fuel Storage Tank Installation", assignedTo: "Division 22 - Mechanical / Plumbing" }
+      ],
+      riskAlerts: [
+        { level: "HIGH", detail: "Mandatory third-party NETA electrical acceptance testing required before energization." },
+        { level: "HIGH", detail: "Davis-Bacon Prevailing Wage rates and weekly certified payroll reporting apply." }
+      ]
+    }
+  };
+
+  const handleRunExtraction = (isSample = false) => {
+    if (scansRemaining <= 0) {
+      setShowPaywall(true);
+      return;
+    }
+
     setIsProcessing(true);
     setTimeout(() => {
-      setExtractedData({
-        projectName: "Mercer Medical Pavilion Phase II",
-        trade: trade,
-        scopeItems: [
-          { id: "S-1", section: "23 05 93", title: "Testing, Adjusting, and Balancing (TAB)", detail: "Provide certified NEBB or AABC agency for all air and hydronic systems prior to substantial completion." },
-          { id: "S-2", section: "23 07 19", title: "HVAC Piping Insulation", detail: "Insulate all chilled water supply/return piping with 1.5-inch cellular glass insulation." },
-          { id: "S-3", section: "23 34 00", title: "Rooftop Air Handling Units", detail: "Furnish and install two 50-ton variable air volume RTUs with factory BACnet communication cards." }
-        ],
-        exclusions: [
-          { item: "Power Wiring & Circuit Breakers", assignedTo: "Division 26 - Electrical Contractor" },
-          { item: "Structural Roof Curbs & Openings", assignedTo: "Division 05 - Structural Steel / GC" }
-        ],
-        riskAlerts: [
-          { level: "HIGH", detail: "Liquidated damages of $2,500/day apply if final balancing report is not submitted by Milestone 3." },
-          { level: "MED", detail: "2-year full parts and labor warranty required on all compressor components (standard is 1-year)." }
-        ]
-      });
+      const data = sampleProjects[trade] || sampleProjects['Division 23 - HVAC'];
+      setExtractedData(data);
+      const newCount = scansRemaining - 1;
+      setScansRemaining(newCount);
+      localStorage.setItem('specscope_scans', newCount.toString());
       setIsProcessing(false);
-    }, 1500);
+    }, 1200);
   };
 
   const handleExportCSV = () => {
@@ -47,18 +90,30 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-50">
+      {/* Header */}
       <header className="border-b border-slate-800 bg-slate-900/50 py-4 px-6 flex justify-between items-center">
         <Link href="/" className="flex items-center space-x-2">
           <Zap className="h-5 w-5 text-blue-500" />
           <span className="font-bold text-lg">SpecScope<span className="text-blue-500">.AI</span></span>
         </Link>
-        <div className="flex items-center space-x-3">
-          <span className="text-xs text-slate-400 bg-slate-800 px-3 py-1 rounded-full">Trial: 3 Scans Remaining</span>
+        <div className="flex items-center space-x-4">
+          <div className="text-xs text-slate-300 bg-slate-800/90 border border-slate-700 px-3 py-1.5 rounded-full flex items-center space-x-2">
+            <span>Trial Scans:</span>
+            <span className={`font-bold ${scansRemaining > 0 ? 'text-blue-400' : 'text-rose-400'}`}>{scansRemaining} / 3</span>
+          </div>
+          <button 
+            onClick={() => setShowPaywall(true)}
+            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-lg transition"
+          >
+            Upgrade Plan
+          </button>
         </div>
       </header>
 
+      {/* Main Workspace */}
       <div className="flex-1 max-w-6xl w-full mx-auto p-6 grid lg:grid-cols-3 gap-8">
+        {/* Left Control Panel */}
         <div className="lg:col-span-1 space-y-6">
           <div className="p-6 bg-slate-900 border border-slate-800 rounded-2xl">
             <h2 className="text-lg font-bold text-white mb-4">New Project Extraction</h2>
@@ -69,22 +124,32 @@ export default function Dashboard() {
               onChange={(e) => setTrade(e.target.value)}
               className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg p-2.5 text-sm mb-6 focus:ring-2 focus:ring-blue-500 outline-none"
             >
-              <option>Division 21 - Fire Suppression</option>
-              <option>Division 22 - Plumbing</option>
               <option>Division 23 - HVAC</option>
               <option>Division 26 - Electrical</option>
+              <option>Division 22 - Plumbing</option>
+              <option>Division 21 - Fire Suppression</option>
               <option>Division 07 - Roofing & Waterproofing</option>
-              <option>Division 09 - Finishes / Drywall</option>
             </select>
 
-            <div className="border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-xl p-8 text-center cursor-pointer transition bg-slate-950/40">
-              <Upload className="h-8 w-8 text-slate-400 mx-auto mb-3" />
+            {/* Upload Box with 1-Click Sample Button */}
+            <div className="border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-xl p-6 text-center transition bg-slate-950/40 space-y-3">
+              <Upload className="h-7 w-7 text-slate-400 mx-auto" />
               <p className="text-sm font-medium text-slate-300">Drop Spec Book (PDF) here</p>
-              <p className="text-xs text-slate-500 mt-1">Up to 250 MB supported</p>
+              <p className="text-xs text-slate-500">Up to 250 MB supported</p>
+              <div className="pt-2 border-t border-slate-800">
+                <button 
+                  onClick={() => handleRunExtraction(true)}
+                  disabled={isProcessing}
+                  className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-blue-400 text-xs font-semibold rounded-lg flex items-center justify-center space-x-1.5 transition border border-slate-700"
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  <span>Load Sample Spec (45 Pages)</span>
+                </button>
+              </div>
             </div>
 
             <button 
-              onClick={handleSimulateExtraction}
+              onClick={() => handleRunExtraction(false)}
               disabled={isProcessing}
               className="w-full mt-6 py-3 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white font-semibold rounded-xl text-sm transition shadow-lg shadow-blue-600/20"
             >
@@ -93,6 +158,7 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* Right Results Panel */}
         <div className="lg:col-span-2 space-y-6">
           {extractedData ? (
             <div className="space-y-6">
@@ -110,6 +176,7 @@ export default function Dashboard() {
                 </button>
               </div>
 
+              {/* Scope Checklist */}
               <div className="p-6 bg-slate-900 border border-slate-800 rounded-2xl">
                 <h4 className="text-sm font-bold text-slate-300 uppercase tracking-wider mb-4 flex items-center">
                   <CheckCircle className="h-4 w-4 text-blue-400 mr-2" />
@@ -129,6 +196,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
+              {/* Risk & Exclusions */}
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="p-5 bg-slate-900 border border-slate-800 rounded-2xl">
                   <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider mb-3 flex items-center">
@@ -164,11 +232,44 @@ export default function Dashboard() {
             <div className="h-96 border border-slate-800 rounded-2xl flex flex-col items-center justify-center text-center p-8 bg-slate-900/30">
               <FileText className="h-12 w-12 text-slate-600 mb-4" />
               <h3 className="text-base font-semibold text-slate-300">No Active Extraction</h3>
-              <p className="text-xs text-slate-500 max-w-sm mt-1">Select your trade division on the left and upload a spec document or click "Extract Trade Scope" to view sample extraction.</p>
+              <p className="text-xs text-slate-500 max-w-sm mt-1">Select your trade division and click <strong>"Load Sample Spec"</strong> to test the extraction engine instantly.</p>
             </div>
           )}
         </div>
       </div>
+
+      {/* Paywall Upgrade Modal */}
+      {showPaywall && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-8 relative shadow-2xl">
+            <button onClick={() => setShowPaywall(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white">
+              <X className="h-5 w-5" />
+            </button>
+            <div className="w-12 h-12 bg-blue-950 border border-blue-800 rounded-xl flex items-center justify-center text-blue-400 mb-4">
+              <Lock className="h-6 w-6" />
+            </div>
+            <h3 className="text-2xl font-bold text-white">Upgrade to Unlimited Extractions</h3>
+            <p className="mt-2 text-sm text-slate-400">
+              You have used your free trial scans. Upgrade to an active estimator plan to unlock unlimited project manual extractions and Excel exports.
+            </p>
+            <div className="mt-6 space-y-3">
+              <a 
+                href="https://buy.stripe.com/14AaEW6dXbEff2H87K28800"
+                className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl flex items-center justify-center space-x-2 transition shadow-lg shadow-blue-600/30"
+              >
+                <span>Solo Estimator — $69 / month</span>
+                <ArrowRight className="h-4 w-4" />
+              </a>
+              <a 
+                href="https://buy.stripe.com/14A5kC6dX37Jf2H73G28802"
+                className="w-full py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-xl flex items-center justify-center space-x-2 transition border border-slate-700"
+              >
+                <span>Annual Pass (Save 40%) — $499 / year</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
