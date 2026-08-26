@@ -4,6 +4,7 @@ import { ArrowRight, CheckCircle2, ShieldCheck, Zap, FileSpreadsheet, Clock } fr
 export default function LandingPage() {
   return (
     <main className="flex flex-col items-center">
+      {/* Navigation */}
       <nav className="w-full max-w-6xl flex justify-between items-center py-6 px-6 border-b border-slate-800">
         <div className="flex items-center space-x-2">
           <Zap className="h-6 w-6 text-blue-500" />
@@ -15,6 +16,7 @@ export default function LandingPage() {
         </div>
       </nav>
 
+      {/* Hero Section */}
       <section className="w-full max-w-5xl py-20 px-6 text-center flex flex-col items-center">
         <div className="inline-flex items-center space-x-2 px-3 py-1 bg-blue-950/60 border border-blue-800/60 rounded-full text-blue-400 text-xs font-semibold mb-6">
           <ShieldCheck className="h-4 w-4" />
@@ -24,7 +26,7 @@ export default function LandingPage() {
           Turn 200-Page Spec Books Into <span className="text-blue-500">Biddable Scopes</span> in 60 Seconds
         </h1>
         <p className="mt-6 text-lg text-slate-400 max-w-2xl">
-          Stop losing weekends to PDF manual reviews. Automatically extract trade-specific scope checklists, mandatory exclusions, and liquidated damage penalties ready for Excel takeoff.
+          Stop losing weekends to manual PDF reviews. Automatically extract trade-specific scope checklists, mandatory exclusions, and liquidated damage penalties ready for Excel takeoff.
         </p>
         <div className="mt-8 flex flex-col sm:flex-row gap-4">
           <Link href="/dashboard" className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition flex items-center justify-center space-x-2 shadow-xl shadow-blue-600/25">
@@ -34,6 +36,7 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ROI Features */}
       <section className="w-full max-w-6xl py-16 px-6 grid md:grid-cols-3 gap-8">
         <div className="p-8 bg-slate-900/60 border border-slate-800 rounded-2xl">
           <Clock className="h-8 w-8 text-blue-400 mb-4" />
@@ -52,9 +55,11 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Pricing Tiers with Live Stripe Checkout */}
       <section className="w-full max-w-5xl py-20 px-6">
         <h2 className="text-3xl font-bold text-center text-white mb-12">Straightforward Pricing for Active Estimators</h2>
         <div className="grid md:grid-cols-3 gap-8">
+          {/* Free Trial */}
           <div className="p-8 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col justify-between">
             <div>
               <h3 className="text-lg font-bold text-slate-300">Free Pilot</h3>
@@ -69,12 +74,13 @@ export default function LandingPage() {
             <Link href="/dashboard" className="mt-8 block text-center py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-sm font-medium transition">Get Started</Link>
           </div>
 
+          {/* Solo Estimator */}
           <div className="p-8 bg-blue-950/40 border-2 border-blue-500 rounded-2xl flex flex-col justify-between relative shadow-2xl shadow-blue-500/10">
             <div className="absolute -top-3.5 right-6 px-3 py-1 bg-blue-500 text-slate-950 text-xs font-bold rounded-full">POPULAR</div>
             <div>
               <h3 className="text-lg font-bold text-blue-300">Solo Estimator</h3>
               <div className="mt-4 text-4xl font-extrabold text-white">$69<span className="text-base font-normal text-slate-400">/mo</span></div>
-              <p className="text-xs text-slate-500 mt-1">Billed monthly</p>
+              <p className="text-xs text-slate-500 mt-1">Billed monthly (cancel anytime)</p>
               <ul className="mt-6 space-y-3 text-sm text-slate-300">
                 <li className="flex items-center"><CheckCircle2 className="h-4 w-4 text-blue-400 mr-2" /> Unlimited Spec Book Scans</li>
                 <li className="flex items-center"><CheckCircle2 className="h-4 w-4 text-blue-400 mr-2" /> All CSI MasterFormat Divisions</li>
@@ -82,9 +88,10 @@ export default function LandingPage() {
                 <li className="flex items-center"><CheckCircle2 className="h-4 w-4 text-blue-400 mr-2" /> Priority Extraction Speed</li>
               </ul>
             </div>
-            <Link href="/dashboard" className="mt-8 block text-center py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition shadow-lg shadow-blue-600/30">Start Solo Plan</Link>
+            <a href="https://buy.stripe.com/14AaEW6dXbEff2H87K28800" className="mt-8 block text-center py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition shadow-lg shadow-blue-600/30">Start Solo Plan</a>
           </div>
 
+          {/* Annual Pass */}
           <div className="p-8 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col justify-between">
             <div>
               <h3 className="text-lg font-bold text-slate-300">Annual Pass</h3>
@@ -96,7 +103,7 @@ export default function LandingPage() {
                 <li className="flex items-center"><CheckCircle2 className="h-4 w-4 text-blue-500 mr-2" /> Dedicated Onboarding Support</li>
               </ul>
             </div>
-            <Link href="/dashboard" className="mt-8 block text-center py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-sm font-medium transition">Get Annual Pass</Link>
+            <a href="https://buy.stripe.com/14A5kC6dX37Jf2H73G28802" className="mt-8 block text-center py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-sm font-medium transition">Get Annual Pass</a>
           </div>
         </div>
       </section>
