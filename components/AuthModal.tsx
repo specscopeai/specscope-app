@@ -24,7 +24,15 @@ export default function AuthModal({ isOpen, onClose, defaultTab = 'signin' }: { 
       return;
     }
 
-    const { error } = await supabase.auth.signInWithOtp({ email });
+    const redirectUrl = typeof window !== 'undefined' ? `${window.location.origin}/dashboard` : undefined;
+
+    const { error } = await supabase.auth.signInWithOtp({ 
+      email,
+      options: {
+        emailRedirectTo: redirectUrl
+      }
+    });
+
     if (error) {
       setErrorMsg(error.message);
     } else {
