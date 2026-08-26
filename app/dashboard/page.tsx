@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Zap, Upload, FileText, Download, CheckCircle, AlertTriangle, Sparkles, Lock, ArrowRight, LogOut } from 'lucide-react';
+import { Zap, Upload, FileText, Download, CheckCircle, AlertTriangle, Sparkles, Lock, ArrowRight, LogOut, X } from 'lucide-react';
 import AuthModal from '@/components/AuthModal';
 import { supabase } from '@/lib/supabase';
 
