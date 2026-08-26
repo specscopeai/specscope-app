@@ -1,9 +1,9 @@
 'use client';
 import { useState } from 'react';
-import { X, Mail, ShieldCheck, CheckCircle, Lock } from 'lucide-react';
+import { X, Mail, ShieldCheck, CheckCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
-export default function AuthModal({ isOpen, onClose, onAuthSuccess, defaultTab = 'signin' }: { isOpen: boolean; onClose: () => void; onAuthSuccess?: () => void; defaultTab?: 'signin' | 'signup' }) {
+export default function AuthModal({ isOpen, onClose, defaultTab = 'signin' }: { isOpen: boolean; onClose: () => void; defaultTab?: 'signin' | 'signup' }) {
   const [tab, setTab] = useState<'signin' | 'signup'>(defaultTab);
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
@@ -17,9 +17,10 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, defaultTab =
     e.preventDefault();
     setErrorMsg('');
     
-    const domain = email.split('@')?.toLowerCase();
+    const parts = email.split('@');
+    const domain = parts?.toLowerCase() || '';
     if (disposableDomains.includes(domain)) {
-      setErrorMsg('Please use a valid company or personal email address.');
+      setErrorMsg('Please use a valid email address.');
       return;
     }
 
@@ -74,11 +75,11 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, defaultTab =
         ) : (
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">Company / Work Email</label>
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5">Email</label>
               <input 
                 type="email" 
                 required 
-                placeholder="estimator@contracting.com"
+                placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
