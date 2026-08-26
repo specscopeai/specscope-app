@@ -89,10 +89,35 @@ export default function Dashboard() {
     }
   };
 
+  const getTradeData = (selectedTrade: string) => {
+    if (sampleProjects[selectedTrade]) {
+      return sampleProjects[selectedTrade];
+    }
+    const tradeTitle = selectedTrade.includes(' - ') ? selectedTrade.split(' - ')[1] : selectedTrade;
+    const divNum = selectedTrade.startsWith('Division') ? selectedTrade.split(' ')[1] : '01';
+    return {
+      projectName: `Commercial Facility Phase I (${selectedTrade})`,
+      trade: selectedTrade,
+      scopeItems: [
+        { id: "S-1", section: `${divNum} 05 00`, title: `${tradeTitle} Core Work Requirements`, detail: `Furnish all materials, labor, equipment, and supervision required for complete execution under ${selectedTrade}.` },
+        { id: "S-2", section: `${divNum} 10 00`, title: "Field Testing & Quality Verification", detail: "Provide certified third-party testing, compliance certificates, and field quality inspection logs prior to final completion." },
+        { id: "S-3", section: `${divNum} 20 00`, title: "Submittals & As-Built Records", detail: "Provide complete shop drawings, product data sheets, and as-built record documentation within 14 calendar days." }
+      ],
+      exclusions: [
+        { item: "Primary Electrical Service & Power Connections", assignedTo: "Division 26 - Electrical Contractor" },
+        { item: "Structural Core Penetrations & Steel Framing", assignedTo: "Division 05 - Structural Steel / GC" }
+      ],
+      riskAlerts: [
+        { level: "HIGH", detail: "Milestone completion requirement: All submittals and mockups must be approved prior to bulk material delivery." },
+        { level: "MED", detail: "Standard 2-year full parts and labor warranty required on all primary components." }
+      ]
+    };
+  };
+
   const handleLoadFreeSample = () => {
     setIsProcessing(true);
     setTimeout(() => {
-      const data = sampleProjects[trade] || sampleProjects['Division 23 - HVAC'];
+      const data = getTradeData(trade);
       setExtractedData(data);
       setIsProcessing(false);
     }, 600);
@@ -112,7 +137,7 @@ export default function Dashboard() {
 
     setIsProcessing(true);
     setTimeout(async () => {
-      const data = sampleProjects[trade] || sampleProjects['Division 23 - HVAC'];
+      const data = getTradeData(trade);
       setExtractedData(data);
       const newCount = scansRemaining - 1;
       setScansRemaining(newCount);
@@ -159,15 +184,16 @@ export default function Dashboard() {
           <span className="font-bold text-lg">SpecScope<span className="text-blue-500">.AI</span></span>
         </Link>
         <div className="flex items-center space-x-4">
+          <div className="text-xs text-slate-300 bg-slate-800/90 border border-slate-700 px-3 py-1.5 rounded-full flex items-center space-x-2">
+            <span className={`font-bold ${scansRemaining > 0 ? 'text-blue-400' : 'text-rose-400'}`}>
+              {scansRemaining} Free Scan{scansRemaining === 1 ? '' : 's'} Remaining
+            </span>
+          </div>
           {currentUser ? (
             <div className="flex items-center space-x-3">
-              <div className="text-xs text-slate-300 bg-slate-800/90 border border-slate-700 px-3 py-1.5 rounded-full flex items-center space-x-2">
-                <span>Free Scans:</span>
-                <span className={`font-bold ${scansRemaining > 0 ? 'text-blue-400' : 'text-rose-400'}`}>{scansRemaining}</span>
-              </div>
               <Link href="/account" className="flex items-center space-x-1.5 text-xs text-slate-300 hover:text-white px-2.5 py-1.5 rounded-lg hover:bg-slate-800 border border-slate-700 transition">
                 <User className="h-3.5 w-3.5 text-blue-400" />
-                <span>Account &amp; Seats</span>
+                <span>Account</span>
               </Link>
               <button onClick={handleSignOut} title="Sign Out" className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition">
                 <LogOut className="h-4 w-4" />
@@ -202,11 +228,29 @@ export default function Dashboard() {
               onChange={(e) => setTrade(e.target.value)}
               className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg p-2.5 text-sm mb-6 focus:ring-2 focus:ring-blue-500 outline-none"
             >
-              <option>Division 23 - HVAC</option>
-              <option>Division 26 - Electrical</option>
+              <option>Division 01 - General</option>
+              <option>Division 03 - Concrete</option>
+              <option>Division 04 - Masonry</option>
+              <option>Division 05 - Metals</option>
+              <option>Division 06 - Wood</option>
+              <option>Division 07 - Thermal/Roofing</option>
+              <option>Division 08 - Openings</option>
+              <option>Division 09 - Finishes</option>
+              <option>Division 10 - Specialties</option>
+              <option>Division 11 - Equipment</option>
+              <option>Division 12 - Furnishings</option>
+              <option>Division 14 - Conveying</option>
+              <option>Division 21 - Fire</option>
               <option>Division 22 - Plumbing</option>
-              <option>Division 21 - Fire Suppression</option>
-              <option>Division 07 - Roofing &amp; Waterproofing</option>
+              <option>Division 23 - HVAC</option>
+              <option>Division 25 - Automation</option>
+              <option>Division 26 - Electrical</option>
+              <option>Division 27 - Comms</option>
+              <option>Division 28 - Security</option>
+              <option>Division 31 - Earthwork</option>
+              <option>Division 32 - Exterior</option>
+              <option>Division 33 - Utilities</option>
+              <option>All Divisions</option>
             </select>
 
             <div className="border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-xl p-6 text-center transition bg-slate-950/40 space-y-3">

@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Zap, User, Users, CreditCard, Shield, Trash2, Plus, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react';
+import { Zap, User, Users, CreditCard, Shield, Trash2, Plus, ArrowLeft, CheckCircle, AlertCircle, Lock } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 export default function AccountPage() {
@@ -92,59 +92,85 @@ export default function AccountPage() {
           </div>
         </div>
 
-        {/* Team Seats Management */}
-        <div className="p-6 bg-slate-900 border border-slate-800 rounded-2xl space-y-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="text-base font-bold text-white flex items-center"><Users className="h-4 w-4 text-blue-400 mr-2" /> Team Estimator Seats</h3>
-              <p className="text-xs text-slate-400 mt-0.5">Team licenses include 3 total seats (1 Owner + 2 Members). Access revokes automatically upon plan cancellation.</p>
-            </div>
-            <span className="text-xs bg-slate-800 border border-slate-700 px-3 py-1 rounded-full font-semibold text-slate-300">
-              {teamSeats.length + 1} / 3 Seats Used
-            </span>
-          </div>
-
-          <form onSubmit={handleAddSeat} className="flex gap-3 pt-2">
-            <input 
-              type="email"
-              placeholder="colleague@contracting.com"
-              value={inviteEmail}
-              onChange={(e) => setInviteEmail(e.target.value)}
-              className="flex-1 bg-slate-800 border border-slate-700 text-white rounded-xl px-3.5 py-2.5 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
-            />
-            <button 
-              type="submit"
-              className="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold flex items-center space-x-1.5 transition"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Invite Estimator</span>
-            </button>
-          </form>
-          {seatMsg && <p className="text-xs text-blue-400">{seatMsg}</p>}
-
-          <div className="space-y-2 pt-2">
-            <div className="p-3 bg-slate-950/60 border border-slate-800/80 rounded-xl flex justify-between items-center text-xs">
+        {/* Team Seats Management - Gated for Team Plan */}
+        {profile?.subscription_tier === 'team' ? (
+          <div className="p-6 bg-slate-900 border border-slate-800 rounded-2xl space-y-4">
+            <div className="flex justify-between items-center">
               <div>
-                <span className="text-white font-medium">{user?.email}</span>
-                <span className="text-slate-500 ml-2">(Owner)</span>
+                <h3 className="text-base font-bold text-white flex items-center"><Users className="h-4 w-4 text-blue-400 mr-2" /> Team Estimator Seats</h3>
+                <p className="text-xs text-slate-400 mt-0.5">Team licenses include 3 total seats (1 Owner + 2 Members). Access revokes automatically upon plan cancellation.</p>
               </div>
-              <span className="text-blue-400 font-semibold text-[11px]">Primary Seat</span>
+              <span className="text-xs bg-slate-800 border border-slate-700 px-3 py-1 rounded-full font-semibold text-slate-300">
+                {teamSeats.length + 1} / 3 Seats Used
+              </span>
             </div>
 
-            {teamSeats.map((seat, idx) => (
-              <div key={idx} className="p-3 bg-slate-950/60 border border-slate-800/80 rounded-xl flex justify-between items-center text-xs">
-                <span className="text-white font-medium">{seat.member_email}</span>
-                <button 
-                  onClick={() => handleRemoveSeat(seat.member_email)}
-                  className="text-slate-500 hover:text-rose-400 transition"
-                  title="Remove Seat"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
+            <form onSubmit={handleAddSeat} className="flex gap-3 pt-2">
+              <input 
+                type="email"
+                placeholder="colleague@contracting.com"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                className="flex-1 bg-slate-800 border border-slate-700 text-white rounded-xl px-3.5 py-2.5 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+              <button 
+                type="submit"
+                className="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold flex items-center space-x-1.5 transition"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Invite Estimator</span>
+              </button>
+            </form>
+            {seatMsg && <p className="text-xs text-blue-400">{seatMsg}</p>}
+
+            <div className="space-y-2 pt-2">
+              <div className="p-3 bg-slate-950/60 border border-slate-800/80 rounded-xl flex justify-between items-center text-xs">
+                <div>
+                  <span className="text-white font-medium">{user?.email}</span>
+                  <span className="text-slate-500 ml-2">(Owner)</span>
+                </div>
+                <span className="text-blue-400 font-semibold text-[11px]">Primary Seat</span>
               </div>
-            ))}
+
+              {teamSeats.map((seat, idx) => (
+                <div key={idx} className="p-3 bg-slate-950/60 border border-slate-800/80 rounded-xl flex justify-between items-center text-xs">
+                  <span className="text-white font-medium">{seat.member_email}</span>
+                  <button 
+                    onClick={() => handleRemoveSeat(seat.member_email)}
+                    className="text-slate-500 hover:text-rose-400 transition"
+                    title="Remove Seat"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="p-6 bg-slate-900/60 border border-slate-800/90 rounded-2xl space-y-4">
+            <div className="flex items-start space-x-3">
+              <div className="p-2.5 bg-purple-950/50 border border-purple-800/60 rounded-xl text-purple-400">
+                <Lock className="h-5 w-5" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-base font-bold text-white flex items-center">Team Estimator Seats</h3>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Team seats (3 total) are included on the Team Plan ($149/mo).
+                </p>
+              </div>
+            </div>
+            <div className="pt-2">
+              <a 
+                href="https://buy.stripe.com/aFa7sK6dX6jV2fVgEg28801"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center space-x-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-semibold transition shadow-lg shadow-purple-600/20"
+              >
+                <span>Upgrade to Team Plan</span>
+              </a>
+            </div>
+          </div>
+        )}
 
         {/* Billing Portal Card */}
         <div className="p-6 bg-slate-900 border border-slate-800 rounded-2xl space-y-4">
@@ -152,7 +178,9 @@ export default function AccountPage() {
           <p className="text-xs text-slate-400">Manage your company credit card, download formal PDF tax invoices, or update your subscription plan via Stripe Customer Portal.</p>
           <div className="pt-2 flex gap-4">
             <a 
-              href="https://billing.stripe.com/p/login/test_placeholder" 
+              href="https://billing.stripe.com/p/login/aFa7sK6dX6jV2fVgEg28801" 
+              target="_blank"
+              rel="noopener noreferrer"
               className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white rounded-xl text-xs font-semibold transition"
             >
               Open Stripe Billing Portal

@@ -5,6 +5,7 @@ import { ShieldCheck, Lock, FileText, X } from 'lucide-react';
 export default function Footer() {
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
+  const [showLiability, setShowLiability] = useState(false);
 
   return (
     <footer className="w-full border-t border-slate-800 bg-slate-950 py-12 px-6 text-xs text-slate-400">
@@ -24,7 +25,7 @@ export default function Footer() {
           <ul className="space-y-2">
             <li><button onClick={() => setShowTerms(true)} className="hover:text-white transition">Terms of Service</button></li>
             <li><button onClick={() => setShowPrivacy(true)} className="hover:text-white transition">Privacy & Data Security</button></li>
-            <li><span className="text-slate-500">Limitation of Liability</span></li>
+            <li><button onClick={() => setShowLiability(true)} className="hover:text-white transition">Limitation of Liability</button></li>
           </ul>
         </div>
 
@@ -71,6 +72,22 @@ export default function Footer() {
               <p><strong>1. Zero AI Model Training:</strong> All specification documents processed through our enterprise API endpoints are strictly confidential and are <strong>never used to train public AI models</strong>, in compliance with standard Google Enterprise API service terms.</p>
               <p><strong>2. Data Encryption:</strong> All data is encrypted in transit via TLS 1.3 and at rest with AES-256 encryption.</p>
               <p><strong>3. Data Ownership:</strong> Contractors retain 100% ownership of all uploaded project manuals and extracted data. We do not sell or distribute contractor data to any third party.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Limitation of Liability Modal */}
+      {showLiability && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-8 max-h-[80vh] overflow-y-auto relative shadow-2xl text-slate-300 space-y-4">
+            <button onClick={() => setShowLiability(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X className="h-5 w-5" /></button>
+            <h3 className="text-xl font-bold text-white">Limitation of Liability Agreement</h3>
+            <p className="text-xs text-slate-400">Effective: August 2026</p>
+            <div className="space-y-3 text-xs leading-relaxed">
+              <p><strong>1. Estimating Tool Nature:</strong> SpecScope AI is designed solely as an estimating productivity and drafting assistance tool. Output summaries, scope checklists, and exclusion tables are generated automatically to assist contractor review.</p>
+              <p><strong>2. Zero Liability for Bid Errors:</strong> Under no circumstances shall SpecScope AI, its developers, or parent company be held liable for missed scope items, pricing inaccuracies, bidding oversights, unassigned contract specifications, liquidated damages, or project cost overruns.</p>
+              <p><strong>3. Mandatory Independent Review:</strong> Subcontractors and estimating teams must independently review, verify, and audit all official project manuals, contract specifications, architectural drawings, and addenda before submitting binding bids or lump-sum proposals.</p>
             </div>
           </div>
         </div>
