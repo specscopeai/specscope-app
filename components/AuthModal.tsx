@@ -17,8 +17,8 @@ export default function AuthModal({ isOpen, onClose, defaultTab = 'signin' }: { 
     e.preventDefault();
     setErrorMsg('');
     
-    const parts = email.split('@');
-    const domain = parts?.toLowerCase() || '';
+    const atIndex = email.indexOf('@');
+    const domain = atIndex > -1 ? email.slice(atIndex + 1).toLowerCase() : '';
     if (disposableDomains.includes(domain)) {
       setErrorMsg('Please use a valid email address.');
       return;
