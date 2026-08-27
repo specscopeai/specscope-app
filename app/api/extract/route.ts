@@ -79,28 +79,41 @@ Return ONLY a valid JSON object strictly matching this schema:
       parts.push({ text: `Extract a realistic high-precision trade specification scope checklist for ${trade}.` });
     }
 
-    const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts }],
-          generationConfig: {
-            response_mime_type: 'application/json',
-            temperature: 0.2
-          }
-        })
-      }
-    );
+    const candidateModels = ['gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-flash-latest'];
+    let geminiData = null;
+    let lastError = '';
 
-    if (!geminiRes.ok) {
-      const errText = await geminiRes.text();
-      console.error('Gemini API Error:', errText);
-      return NextResponse.json({ error: 'Failed to process document with Gemini AI engine.', details: errText }, { status: 502 });
+    for (const model of candidateModels) {
+      try {
+        const geminiRes = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts }],
+              generationConfig: {
+                response_mime_type: 'application/json',
+                temperature: 0.2
+              }
+            })
+          }
+        );
+
+        if (geminiRes.ok) {
+          geminiData = await geminiRes.json();
+          break;
+        } else {
+          lastError = await geminiRes.text();
+        }
+      } catch (err: any) {
+        lastError = err.message;
+      }
     }
 
-    const geminiData = await geminiRes.json();
+    if (!geminiData) {
+      return NextResponse.json({ error: 'Failed to process document with Gemini AI engine.', details: lastError }, { status: 502 });
+    }
     const rawContent = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!rawContent) {
