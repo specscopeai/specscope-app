@@ -22,8 +22,17 @@ export async function POST(req: NextRequest) {
     const userId = dataObject.client_reference_id || dataObject.metadata?.user_id;
     const customerEmail = dataObject.customer_details?.email || dataObject.customer_email || dataObject.email;
 
-    // Helper to update Supabase profile
-    const updateProfile = async (tier: string, scans: number) => {
+    const updateProfile = async (tier: string, scans: number, statusText: string = 'active') => {
+      const now = new Date().toISOString();
+      const payload: any = {
+        subscription_tier: tier,
+        scans_remaining: scans,
+        updated_at: now
+      };
+      if (statusText === 'active') {
+        payload.last_payment_at = now;
+      }
+
       if (userId) {
         await fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${userId}`, {
           method: 'PATCH',
@@ -33,10 +42,7 @@ export async function POST(req: NextRequest) {
             'Authorization': `Bearer ${supabaseKey}`,
             'Prefer': 'return=minimal'
           },
-          body: JSON.stringify({
-            subscription_tier: tier,
-            scans_remaining: scans
-          })
+          body: JSON.stringify(payload)
         });
       } else if (customerEmail) {
         await fetch(`${supabaseUrl}/rest/v1/profiles?email=eq.${encodeURIComponent(customerEmail)}`, {
@@ -47,10 +53,7 @@ export async function POST(req: NextRequest) {
             'Authorization': `Bearer ${supabaseKey}`,
             'Prefer': 'return=minimal'
           },
-          body: JSON.stringify({
-            subscription_tier: tier,
-            scans_remaining: scans
-          })
+          body: JSON.stringify(payload)
         });
       }
     };
@@ -64,7 +67,7 @@ export async function POST(req: NextRequest) {
         tier = amountTotal >= 40000 ? 'solo_annual' : 'team';
       }
 
-      await updateProfile(tier, 9999);
+      await updateProfile(tier, 9999, 'active');
     } 
     // 2. Active, Past-Due, or Canceled Subscription Updates
     else if (eventType === 'customer.subscription.updated') {
@@ -76,19 +79,19 @@ export async function POST(req: NextRequest) {
         if (planAmount >= 14000) {
           tier = planAmount >= 40000 ? 'solo_annual' : 'team';
         }
-        await updateProfile(tier, 9999);
+        await updateProfile(tier, 9999, 'active');
       } else if (subStatus === 'past_due' || subStatus === 'unpaid' || subStatus === 'canceled') {
         // Payment failed or subscription lapsed -> Revoke access
-        await updateProfile('free', 0);
+        await updateProfile('free', 0, 'lapsed');
       }
     } 
     // 3. Invoice Payment Failed (Card Declined / Insufficient Funds)
     else if (eventType === 'invoice.payment_failed') {
-      await updateProfile('free', 0);
+      await updateProfile('free', 0, 'failed');
     } 
     // 4. Subscription Canceled / Deleted
     else if (eventType === 'customer.subscription.deleted') {
-      await updateProfile('free', 0);
+      await updateProfile('free', 0, 'canceled');
     }
 
     return NextResponse.json({ received: true, status: 'processed', eventType });

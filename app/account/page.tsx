@@ -92,14 +92,33 @@ export default function AccountPage() {
         {/* Profile Card */}
         <div className="p-6 bg-slate-900 border border-slate-800 rounded-2xl space-y-4">
           <h3 className="text-base font-bold text-white flex items-center"><User className="h-4 w-4 text-blue-400 mr-2" /> Profile Overview</h3>
-          <div className="grid sm:grid-cols-2 gap-4 text-xs">
+          <div className="grid sm:grid-cols-3 gap-4 text-xs">
             <div className="p-3.5 bg-slate-950/60 border border-slate-800 rounded-xl">
               <span className="text-slate-500 font-semibold block">Logged In Email</span>
-              <span className="text-white font-medium mt-1 block">{user?.email}</span>
+              <span className="text-white font-medium mt-1 block truncate">{user?.email}</span>
             </div>
             <div className="p-3.5 bg-slate-950/60 border border-slate-800 rounded-xl">
-              <span className="text-slate-500 font-semibold block">Subscription Status</span>
-              <span className="text-blue-400 font-bold capitalize mt-1 block">{profile?.subscription_tier?.replace('_', ' ') || 'Free Pilot'}</span>
+              <span className="text-slate-500 font-semibold block">Active Plan Tier</span>
+              <span className="text-blue-400 font-bold capitalize mt-1 block">
+                {profile?.subscription_tier === 'team' 
+                  ? 'Team Plan (3 Seats)' 
+                  : (profile?.subscription_tier === 'solo_annual' 
+                    ? 'Solo Annual Pass' 
+                    : (profile?.subscription_tier === 'solo' ? 'Solo Estimator' : 'Free Pilot'))}
+              </span>
+            </div>
+            <div className="p-3.5 bg-slate-950/60 border border-slate-800 rounded-xl">
+              <span className="text-slate-500 font-semibold block">Billing & Payment Activity</span>
+              <div className="mt-1 flex items-center space-x-2">
+                <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${profile?.subscription_tier && profile.subscription_tier !== 'free' ? 'bg-blue-950 text-blue-400 border border-blue-800' : 'bg-slate-800 text-slate-400 border border-slate-700'}`}>
+                  {profile?.subscription_tier && profile.subscription_tier !== 'free' ? 'Active Subscription' : 'Free Trial Pilot'}
+                </span>
+              </div>
+              <span className="text-[10px] text-slate-500 block mt-1">
+                {profile?.last_payment_at 
+                  ? `Last Payment: ${new Date(profile.last_payment_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}` 
+                  : (profile?.subscription_tier && profile.subscription_tier !== 'free' ? 'Auto-Renews via Stripe' : '1 Free Scan Available')}
+              </span>
             </div>
           </div>
         </div>
