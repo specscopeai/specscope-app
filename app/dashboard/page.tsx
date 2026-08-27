@@ -89,6 +89,9 @@ export default function Dashboard() {
     }
   };
 
+  const fileInputRef = useState<any>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
   const getTradeData = (selectedTrade: string) => {
     if (sampleProjects[selectedTrade]) {
       return sampleProjects[selectedTrade];
@@ -123,7 +126,7 @@ export default function Dashboard() {
     }, 600);
   };
 
-  const handleExtractCustomPDF = () => {
+  const handleExtractCustomPDF = async () => {
     if (!currentUser) {
       setAuthTab('signup');
       setShowAuthModal(true);
@@ -136,16 +139,42 @@ export default function Dashboard() {
     }
 
     setIsProcessing(true);
-    setTimeout(async () => {
-      const data = getTradeData(trade);
+
+    try {
+      let data = null;
+
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        formData.append('trade', trade);
+
+        const res = await fetch('/api/extract', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (res.ok) {
+          data = await res.json();
+        }
+      }
+
+      if (!data) {
+        data = getTradeData(trade);
+      }
+
       setExtractedData(data);
+
       const newCount = scansRemaining - 1;
       setScansRemaining(newCount);
       if (currentUser) {
         await supabase.from('profiles').update({ scans_remaining: newCount }).eq('id', currentUser.id);
       }
+    } catch (err) {
+      console.error('Extraction Failed, loading trade fallback:', err);
+      setExtractedData(getTradeData(trade));
+    } finally {
       setIsProcessing(false);
-    }, 1200);
+    }
   };
 
   const handleSignOut = async () => {
@@ -165,6 +194,14 @@ export default function Dashboard() {
     a.href = url;
     a.download = `SpecScope_${extractedData.trade.replace(/\s+/g, '_')}_Scope.csv`;
     a.click();
+  };
+
+  const getStripeUrl = (baseUrl: string) => {
+    const params = new URLSearchParams();
+    if (currentUser?.id) params.set('client_reference_id', currentUser.id);
+    if (currentUser?.email) params.set('prefilled_email', currentUser.email);
+    const queryString = params.toString();
+    return queryString ? `${baseUrl}?${queryString}` : baseUrl;
   };
 
   return (
@@ -253,14 +290,35 @@ export default function Dashboard() {
               <option>All Divisions</option>
             </select>
 
-            <div className="border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-xl p-6 text-center transition bg-slate-950/40 space-y-3">
+            <div 
+              onClick={() => {
+                const el = document.getElementById('spec-pdf-file-input');
+                if (el) el.click();
+              }}
+              className="border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-xl p-6 text-center cursor-pointer transition bg-slate-950/40 space-y-3"
+            >
+              <input 
+                id="spec-pdf-file-input"
+                type="file" 
+                accept=".pdf"
+                onChange={(e) => {
+                  if (e.target.files?.[0]) setSelectedFile(e.target.files[0]);
+                }}
+                className="hidden" 
+              />
               <Upload className="h-7 w-7 text-slate-400 mx-auto" />
-              <p className="text-sm font-medium text-slate-300">Drop Spec Book (PDF) here</p>
+              <p className="text-sm font-medium text-slate-300">
+                {selectedFile ? selectedFile.name : "Drop Spec Book (PDF) here or Click to Select"}
+              </p>
               <p className="text-xs text-slate-500">Up to 250 MB supported</p>
               
               <div className="pt-2 border-t border-slate-800">
                 <button 
-                  onClick={handleLoadFreeSample}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleLoadFreeSample();
+                  }}
                   disabled={isProcessing}
                   className="w-full py-2 bg-blue-950/40 hover:bg-blue-900/50 text-blue-400 text-xs font-semibold rounded-lg flex items-center justify-center space-x-1.5 transition border border-blue-800/60"
                 >
@@ -384,20 +442,20 @@ export default function Dashboard() {
             </p>
             <div className="mt-6 space-y-3">
               <a 
-                href="https://buy.stripe.com/14A5kC6dX37Jf2H73G28802"
+                href={getStripeUrl("https://buy.stripe.com/14A5kC6dX37Jf2H73G28802")}
                 className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl flex items-center justify-center space-x-2 transition shadow-lg shadow-blue-600/30"
               >
                 <span>Solo Annual Pass (Save 40%) — $499 / year</span>
                 <ArrowRight className="h-4 w-4" />
               </a>
               <a 
-                href="https://buy.stripe.com/14AaEW6dXbEff2H87K28800"
+                href={getStripeUrl("https://buy.stripe.com/14AaEW6dXbEff2H87K28800")}
                 className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-xl flex items-center justify-center space-x-2 transition border border-slate-700 text-sm"
               >
                 <span>Solo Estimator — $69 / month</span>
               </a>
               <a 
-                href="https://buy.stripe.com/aFa7sK6dX6jV2fVgEg28801"
+                href={getStripeUrl("https://buy.stripe.com/aFa7sK6dX6jV2fVgEg28801")}
                 className="w-full py-3 bg-purple-950/40 hover:bg-purple-900/50 text-purple-300 font-semibold rounded-xl flex items-center justify-center space-x-2 transition border border-purple-800 text-sm"
               >
                 <span>Team License (3 Seats) — $149 / month</span>

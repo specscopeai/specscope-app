@@ -54,6 +54,14 @@ export default function AccountPage() {
     setTeamSeats(teamSeats.filter(s => s.member_email !== memberEmail));
   };
 
+  const getStripeUrl = (baseUrl: string) => {
+    const params = new URLSearchParams();
+    if (user?.id) params.set('client_reference_id', user.id);
+    if (user?.email) params.set('prefilled_email', user.email);
+    const queryString = params.toString();
+    return queryString ? `${baseUrl}?${queryString}` : baseUrl;
+  };
+
   if (isLoading) {
     return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400 text-sm">Loading Account Settings...</div>;
   }
@@ -161,7 +169,7 @@ export default function AccountPage() {
             </div>
             <div className="pt-2">
               <a 
-                href="https://buy.stripe.com/aFa7sK6dX6jV2fVgEg28801"
+                href={getStripeUrl("https://buy.stripe.com/aFa7sK6dX6jV2fVgEg28801")}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center space-x-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-semibold transition shadow-lg shadow-purple-600/20"
