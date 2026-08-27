@@ -15,18 +15,16 @@ export async function POST(req: NextRequest) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-    if (eventType === 'checkout.session.completed' || eventType === 'customer.subscription.updated') {
-      const userId = dataObject.client_reference_id;
-      const customerEmail = dataObject.customer_details?.email || dataObject.customer_email;
-      const amountTotal = dataObject.amount_total; // in cents e.g. 49900 ($499), 6900 ($69), 14900 ($149)
+    if (!supabaseUrl || !supabaseKey) {
+      return NextResponse.json({ error: 'Supabase configuration missing' }, { status: 500 });
+    }
 
-      let tier = 'solo';
-      if (amountTotal >= 14000) {
-        tier = amountTotal >= 40000 ? 'solo_annual' : 'team';
-      }
+    const userId = dataObject.client_reference_id || dataObject.metadata?.user_id;
+    const customerEmail = dataObject.customer_details?.email || dataObject.customer_email || dataObject.email;
 
-      if (userId && supabaseUrl && supabaseKey) {
-        // Update user profile in Supabase via REST API
+    // Helper to update Supabase profile
+    const updateProfile = async (tier: string, scans: number) => {
+      if (userId) {
         await fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${userId}`, {
           method: 'PATCH',
           headers: {
@@ -37,11 +35,10 @@ export async function POST(req: NextRequest) {
           },
           body: JSON.stringify({
             subscription_tier: tier,
-            scans_remaining: 9999
+            scans_remaining: scans
           })
         });
-      } else if (customerEmail && supabaseUrl && supabaseKey) {
-        // Match by email if user ID wasn't passed directly
+      } else if (customerEmail) {
         await fetch(`${supabaseUrl}/rest/v1/profiles?email=eq.${encodeURIComponent(customerEmail)}`, {
           method: 'PATCH',
           headers: {
@@ -52,32 +49,52 @@ export async function POST(req: NextRequest) {
           },
           body: JSON.stringify({
             subscription_tier: tier,
-            scans_remaining: 9999
+            scans_remaining: scans
           })
         });
       }
-    } else if (eventType === 'customer.subscription.deleted') {
-      const customerEmail = dataObject.customer_email;
-      if (customerEmail && supabaseUrl && supabaseKey) {
-        await fetch(`${supabaseUrl}/rest/v1/profiles?email=eq.${encodeURIComponent(customerEmail)}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': supabaseKey,
-            'Authorization': `Bearer ${supabaseKey}`,
-            'Prefer': 'return=minimal'
-          },
-          body: JSON.stringify({
-            subscription_tier: 'free',
-            scans_remaining: 0
-          })
-        });
+    };
+
+    // 1. Successful Auto-Renewal or Initial Checkout Payment
+    if (eventType === 'checkout.session.completed' || eventType === 'invoice.payment_succeeded') {
+      const amountTotal = dataObject.amount_total || dataObject.amount_paid || 0; // in cents
+
+      let tier = 'solo';
+      if (amountTotal >= 14000) {
+        tier = amountTotal >= 40000 ? 'solo_annual' : 'team';
       }
+
+      await updateProfile(tier, 9999);
+    } 
+    // 2. Active, Past-Due, or Canceled Subscription Updates
+    else if (eventType === 'customer.subscription.updated') {
+      const subStatus = dataObject.status; // 'active', 'past_due', 'unpaid', 'canceled'
+      const planAmount = dataObject.items?.data?.[0]?.plan?.amount || 0;
+
+      if (subStatus === 'active' || subStatus === 'trialing') {
+        let tier = 'solo';
+        if (planAmount >= 14000) {
+          tier = planAmount >= 40000 ? 'solo_annual' : 'team';
+        }
+        await updateProfile(tier, 9999);
+      } else if (subStatus === 'past_due' || subStatus === 'unpaid' || subStatus === 'canceled') {
+        // Payment failed or subscription lapsed -> Revoke access
+        await updateProfile('free', 0);
+      }
+    } 
+    // 3. Invoice Payment Failed (Card Declined / Insufficient Funds)
+    else if (eventType === 'invoice.payment_failed') {
+      await updateProfile('free', 0);
+    } 
+    // 4. Subscription Canceled / Deleted
+    else if (eventType === 'customer.subscription.deleted') {
+      await updateProfile('free', 0);
     }
 
-    return NextResponse.json({ received: true, status: 'processed' });
+    return NextResponse.json({ received: true, status: 'processed', eventType });
   } catch (error: any) {
     console.error('Stripe Webhook Error:', error);
     return NextResponse.json({ error: error.message || 'Webhook handler error' }, { status: 400 });
   }
 }
+
