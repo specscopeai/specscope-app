@@ -46,6 +46,10 @@ export default function Dashboard() {
   }, []);
 
   const fetchProfile = async (userId: string) => {
+    if (currentUser?.email === 'specscopeai@gmail.com') {
+      setScansRemaining(9999);
+      return;
+    }
     const { data } = await supabase.from('profiles').select('scans_remaining').eq('id', userId).single();
     if (data) {
       setScansRemaining(data.scans_remaining);

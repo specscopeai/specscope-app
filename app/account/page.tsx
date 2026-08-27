@@ -17,7 +17,11 @@ export default function AccountPage() {
       if (session?.user) {
         setUser(session.user);
         const { data: prof } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
-        setProfile(prof);
+        if (session.user.email === 'specscopeai@gmail.com') {
+          setProfile({ ...prof, subscription_tier: 'team', scans_remaining: 9999 });
+        } else {
+          setProfile(prof);
+        }
         const { data: seats } = await supabase.from('team_seats').select('*').eq('owner_id', session.user.id);
         if (seats) setTeamSeats(seats);
       }
