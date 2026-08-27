@@ -54,8 +54,10 @@ export default function AccountPage() {
   };
 
   const handleRemoveSeat = async (memberEmail: string) => {
+    if (!window.confirm(`Are you sure you want to revoke team seat access for ${memberEmail}?`)) return;
     await supabase.from('team_seats').delete().eq('owner_id', user.id).eq('member_email', memberEmail);
     setTeamSeats(teamSeats.filter(s => s.member_email !== memberEmail));
+    setSeatMsg(`Seat access for ${memberEmail} has been revoked.`);
   };
 
   const getStripeUrl = (baseUrl: string) => {

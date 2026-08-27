@@ -19,6 +19,14 @@ export default function LandingPage() {
     });
   }, []);
 
+  const getStripeUrl = (baseUrl: string) => {
+    const params = new URLSearchParams();
+    if (currentUser?.id) params.set('client_reference_id', currentUser.id);
+    if (currentUser?.email) params.set('prefilled_email', currentUser.email);
+    const queryString = params.toString();
+    return queryString ? `${baseUrl}?${queryString}` : baseUrl;
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-slate-950 text-slate-50">
       {/* Navigation */}
@@ -133,7 +141,7 @@ export default function LandingPage() {
                 <li className="flex items-center"><CheckCircle2 className="h-3.5 w-3.5 text-blue-400 mr-2" /> Uncapped Excel Exports</li>
               </ul>
             </div>
-            <a href="https://buy.stripe.com/14AaEW6dXbEff2H87K28800" className="mt-6 block text-center py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-medium transition border border-slate-700">Start Solo Monthly</a>
+            <a href={getStripeUrl("https://buy.stripe.com/14AaEW6dXbEff2H87K28800")} className="mt-6 block text-center py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-medium transition border border-slate-700">Start Solo Monthly</a>
           </div>
 
           {/* Solo Annual Pass */}
@@ -149,7 +157,7 @@ export default function LandingPage() {
                 <li className="flex items-center"><CheckCircle2 className="h-3.5 w-3.5 text-blue-400 mr-2" /> 1-on-1 Onboarding Support</li>
               </ul>
             </div>
-            <a href="https://buy.stripe.com/14A5kC6dX37Jf2H73G28802" className="mt-6 block text-center py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition shadow-lg shadow-blue-600/30">Get Annual Pass</a>
+            <a href={getStripeUrl("https://buy.stripe.com/14A5kC6dX37Jf2H73G28802")} className="mt-6 block text-center py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition shadow-lg shadow-blue-600/30">Get Annual Pass</a>
           </div>
 
           {/* Team License */}
@@ -164,7 +172,7 @@ export default function LandingPage() {
                 <li className="flex items-center"><CheckCircle2 className="h-3.5 w-3.5 text-purple-400 mr-2" /> Unlimited Team Workspaces</li>
               </ul>
             </div>
-            <a href="https://buy.stripe.com/aFa7sK6dX6jV2fVgEg28801" className="mt-6 block text-center py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-semibold transition shadow-lg shadow-purple-600/30">Start Team Plan</a>
+            <a href={getStripeUrl("https://buy.stripe.com/aFa7sK6dX6jV2fVgEg28801")} className="mt-6 block text-center py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-semibold transition shadow-lg shadow-purple-600/30">Start Team Plan</a>
           </div>
         </div>
       </section>
