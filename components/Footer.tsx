@@ -12,9 +12,24 @@ export default function Footer() {
   const [feedbackMsg, setFeedbackMsg] = useState('');
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
 
-  const handleSendFeedback = (e: React.FormEvent) => {
+  const handleSendFeedback = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!feedbackMsg.trim()) return;
+
+    try {
+      await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          category: feedbackCategory,
+          message: feedbackMsg,
+          userEmail: 'user@getspecscope.com'
+        })
+      });
+    } catch (err) {
+      console.error('Feedback Submit Error:', err);
+    }
+
     setFeedbackSubmitted(true);
     setTimeout(() => {
       setFeedbackSubmitted(false);

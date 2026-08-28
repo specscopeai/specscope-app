@@ -76,6 +76,27 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
 
+-- 8. Create Feedback Table & RLS
+CREATE TABLE IF NOT EXISTS public.feedback (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_email TEXT,
+    category TEXT NOT NULL,
+    message TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.feedback ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Anyone can insert feedback" ON public.feedback;
+CREATE POLICY "Anyone can insert feedback" 
+ON public.feedback FOR INSERT 
+WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Service role view feedback" ON public.feedback;
+CREATE POLICY "Service role view feedback" 
+ON public.feedback FOR SELECT 
+USING (true);
+
 -- ==============================================================================
 -- Schema Setup Completed!
 -- ==============================================================================
