@@ -291,6 +291,14 @@ export default function Dashboard() {
               <option>Division 31 - Earthwork</option>
               <option>Division 32 - Exterior</option>
               <option>Division 33 - Utilities</option>
+              <option>Division 34 - Transportation</option>
+              <option>Division 35 - Waterways & Marine</option>
+              <option>Division 40 - Process Integration</option>
+              <option>Division 41 - Material Processing</option>
+              <option>Division 42 - Process Heating/Cooling</option>
+              <option>Division 43 - Process Gas & Liquid</option>
+              <option>Division 44 - Pollution Control</option>
+              <option>Division 48 - Electrical Power Generation</option>
               <option>All Divisions</option>
             </select>
 

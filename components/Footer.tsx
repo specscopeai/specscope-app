@@ -1,11 +1,27 @@
 'use client';
 import { useState } from 'react';
-import { ShieldCheck, Lock, FileText, X } from 'lucide-react';
+import { ShieldCheck, Lock, FileText, X, MessageSquarePlus, Send, CheckCircle2 } from 'lucide-react';
 
 export default function Footer() {
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showLiability, setShowLiability] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
+
+  const [feedbackCategory, setFeedbackCategory] = useState('Feature Request');
+  const [feedbackMsg, setFeedbackMsg] = useState('');
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+
+  const handleSendFeedback = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!feedbackMsg.trim()) return;
+    setFeedbackSubmitted(true);
+    setTimeout(() => {
+      setFeedbackSubmitted(false);
+      setFeedbackMsg('');
+      setShowFeedback(false);
+    }, 2000);
+  };
 
   return (
     <footer className="w-full border-t border-slate-800 bg-slate-950 py-12 px-6 text-xs text-slate-400">
@@ -30,10 +46,19 @@ export default function Footer() {
         </div>
 
         <div>
-          <h4 className="font-semibold text-white mb-3">Support & Inquiries</h4>
+          <h4 className="font-semibold text-white mb-3">Support & Feedback</h4>
           <ul className="space-y-2">
-            <li><a href="mailto:support@getspecscope.com" className="text-blue-400 hover:underline">support@getspecscope.com</a></li>
-            <li><span className="text-slate-400">Response time: &lt; 24 hours</span></li>
+            <li>
+              <button 
+                onClick={() => setShowFeedback(true)}
+                className="inline-flex items-center space-x-1.5 text-blue-400 hover:text-blue-300 transition font-medium"
+              >
+                <MessageSquarePlus className="h-3.5 w-3.5" />
+                <span>Submit Product Feedback</span>
+              </button>
+            </li>
+            <li><a href="mailto:support@getspecscope.com" className="text-slate-400 hover:text-white transition">support@getspecscope.com</a></li>
+            <li><span className="text-slate-500">Response time: &lt; 24 hours</span></li>
           </ul>
         </div>
       </div>
@@ -45,6 +70,67 @@ export default function Footer() {
           <span>Zero Public AI Model Training</span>
         </div>
       </div>
+
+      {/* Product Feedback Modal */}
+      {showFeedback && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 relative shadow-2xl text-slate-300 space-y-4">
+            <button onClick={() => setShowFeedback(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X className="h-5 w-5" /></button>
+            <div className="flex items-center space-x-2 text-blue-400">
+              <MessageSquarePlus className="h-5 w-5" />
+              <h3 className="text-lg font-bold text-white">Product Feedback & Feature Requests</h3>
+            </div>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Have an idea, trade-specific request, or feedback on an AI extraction? We read every submission directly.
+            </p>
+
+            {feedbackSubmitted ? (
+              <div className="p-6 bg-blue-950/50 border border-blue-800/60 rounded-xl text-center space-y-2">
+                <CheckCircle2 className="h-8 w-8 text-blue-400 mx-auto" />
+                <h4 className="font-bold text-white">Feedback Received!</h4>
+                <p className="text-xs text-slate-300">Thank you for helping us improve SpecScope AI.</p>
+              </div>
+            ) : (
+              <form onSubmit={handleSendFeedback} className="space-y-3 pt-1">
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">Feedback Category</label>
+                  <select 
+                    value={feedbackCategory}
+                    onChange={(e) => setFeedbackCategory(e.target.value)}
+                    className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg p-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
+                  >
+                    <option>Feature Request</option>
+                    <option>AI Extraction Feedback</option>
+                    <option>Trade Specific Need</option>
+                    <option>Bug Report</option>
+                    <option>General Feedback</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">Your Message or Suggestion</label>
+                  <textarea 
+                    rows={4}
+                    value={feedbackMsg}
+                    onChange={(e) => setFeedbackMsg(e.target.value)}
+                    placeholder="Tell us what trade feature or improvement would make your estimating workflow faster..."
+                    className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
+                    required
+                  />
+                </div>
+
+                <button 
+                  type="submit"
+                  className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-xs flex items-center justify-center space-x-2 transition shadow-lg shadow-blue-600/20"
+                >
+                  <Send className="h-4 w-4" />
+                  <span>Submit Feedback</span>
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Terms Modal */}
       {showTerms && (

@@ -153,8 +153,9 @@ export default function LandingPage() {
               <p className="text-xs text-slate-500 mt-1">1 Seat (Save 40%)</p>
               <ul className="mt-5 space-y-2.5 text-xs text-slate-300">
                 <li className="flex items-center"><CheckCircle2 className="h-3.5 w-3.5 text-blue-400 mr-2" /> Unlimited Full Year Access</li>
-                <li className="flex items-center"><CheckCircle2 className="h-3.5 w-3.5 text-blue-400 mr-2" /> Priority Extraction Engine</li>
-                <li className="flex items-center"><CheckCircle2 className="h-3.5 w-3.5 text-blue-400 mr-2" /> 1-on-1 Onboarding Support</li>
+                <li className="flex items-center"><CheckCircle2 className="h-3.5 w-3.5 text-blue-400 mr-2" /> All CSI MasterFormat Divisions</li>
+                <li className="flex items-center"><CheckCircle2 className="h-3.5 w-3.5 text-blue-400 mr-2" /> Liquidated Damages Radar</li>
+                <li className="flex items-center"><CheckCircle2 className="h-3.5 w-3.5 text-blue-400 mr-2" /> Uncapped Excel / CSV Exports</li>
               </ul>
             </div>
             <a href={getStripeUrl("https://buy.stripe.com/14A5kC6dX37Jf2H73G28802")} className="mt-6 block text-center py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition shadow-lg shadow-blue-600/30">Get Annual Pass</a>
@@ -168,8 +169,9 @@ export default function LandingPage() {
               <p className="text-xs text-slate-500 mt-1">3 Estimator Seats</p>
               <ul className="mt-5 space-y-2.5 text-xs text-slate-300">
                 <li className="flex items-center"><CheckCircle2 className="h-3.5 w-3.5 text-purple-400 mr-2" /> 3 Multi-User Estimator Seats</li>
-                <li className="flex items-center"><CheckCircle2 className="h-3.5 w-3.5 text-purple-400 mr-2" /> Centralized Team Management</li>
-                <li className="flex items-center"><CheckCircle2 className="h-3.5 w-3.5 text-purple-400 mr-2" /> Unlimited Team Workspaces</li>
+                <li className="flex items-center"><CheckCircle2 className="h-3.5 w-3.5 text-purple-400 mr-2" /> Unlimited Project Spec Scans</li>
+                <li className="flex items-center"><CheckCircle2 className="h-3.5 w-3.5 text-purple-400 mr-2" /> All CSI MasterFormat Divisions</li>
+                <li className="flex items-center"><CheckCircle2 className="h-3.5 w-3.5 text-purple-400 mr-2" /> Centralized Team Seat Invites</li>
               </ul>
             </div>
             <a href={getStripeUrl("https://buy.stripe.com/aFa7sK6dX6jV2fVgEg28801")} className="mt-6 block text-center py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-semibold transition shadow-lg shadow-purple-600/30">Start Team Plan</a>
